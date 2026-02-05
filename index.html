@@ -278,7 +278,7 @@
     // --- YES button growth (NO LIMIT) ---
     function growYesSlightly(){
       const current = parseFloat(yesBtn.dataset.grow || "1");
-      const next = current + 0.02; // ✅ no max cap now
+      const next = current + 0.03; // ✅ no max cap now
       yesBtn.dataset.grow = String(next);
       yesBtn.style.transform = `scale(${next})`;
     }
@@ -338,3 +338,4 @@
   </script>
 </body>
 </html>
+
