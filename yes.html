@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Det är bestämt</title>
+  <style>
+    :root{
+      --bg1:#140012;
+      --bg2:#1a0030;
+      --text: rgba(255,255,255,0.94);
+      --muted: rgba(255,255,255,0.78);
+      --shadow: 0 22px 70px rgba(0,0,0,0.55);
+      --radius: 24px;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:24px;
+
+      background:
+        radial-gradient(900px 600px at 20% 10%, rgba(255,45,122,0.28), transparent 60%),
+        radial-gradient(900px 650px at 85% 25%, rgba(155,107,255,0.22), transparent 60%),
+        radial-gradient(900px 650px at 50% 110%, rgba(255,43,58,0.14), transparent 65%),
+        linear-gradient(180deg, var(--bg2), var(--bg1));
+
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      overflow-x:hidden;
+    }
+
+    .card{
+      width:min(980px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.07));
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .top{
+      padding: 18px 20px 12px;
+      text-align: center;
+    }
+
+    h1{
+      margin:0;
+      font-size: clamp(22px, 3.2vw, 34px);
+      letter-spacing: -0.02em;
+    }
+
+    .metaLine{
+      margin: 12px auto 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.55;
+      max-width: 820px;
+    }
+
+    img{
+      width:100%;
+      display:block;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      background:#111;
+    }
+
+    .confirm{
+      width:calc(100% - 40px);
+      margin: 12px auto 0;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.92);
+      text-align:center;
+      display:none;
+    }
+    .confirm.show{ display:block; }
+
+    /* Pro toolbar */
+    .bottom{
+      padding: 18px 22px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+      flex-wrap:wrap;
+      background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
+      border-top: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .timeWrap{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      flex-wrap:wrap;
+    }
+
+    .timeLabel{
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      color: rgba(255,255,255,0.88);
+    }
+
+    .timeInput{
+      appearance:none;
+      border-radius: 999px;
+      padding: 12px 16px;
+      min-height: 46px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.22);
+      color: rgba(255,255,255,0.95);
+      outline: none;
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    .btn, .linkBtn{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px;
+      padding: 12px 18px;
+      min-height: 46px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor:pointer;
+      color: rgba(255,255,255,0.94);
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      transition: transform .14s ease, filter .14s ease, background .14s ease;
+      user-select:none;
+      touch-action: manipulation;
+      white-space: nowrap;
+    }
+
+    .btn:hover, .linkBtn:hover{ filter: brightness(1.08); }
+    .btn:active, .linkBtn:active{ transform: scale(0.98); }
+
+    #confettiBtn{
+      border-color: rgba(255,255,255,0.18);
+      background: linear-gradient(180deg, rgba(155,107,255,1), rgba(120,75,255,1));
+    }
+
+    a{
+      text-decoration:none;
+      color: rgba(255,255,255,0.94);
+      opacity: 1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .actionsRight{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      flex-wrap:wrap;
+    }
+
+    canvas#confetti{
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="confetti"></canvas>
+
+  <div class="card">
+    <div class="top">
+      <h1>YYYeeesss!!!</h1>
+      <div class="metaLine">
+        <span>Sushi på fredag är spikat. Ses på fredag.</span>
+        <span>Glöm inte att spara tiden som passar dig bäst 💜</span>
+      </div>
+    </div>
+
+    <img src="clapping-applause.gif" alt="Applåder" />
+
+    <div id="confirmBox" class="confirm"></div>
+
+    <div class="bottom">
+      <div class="timeWrap">
+        <span class="timeLabel">Välj en tid:</span>
+        <input class="timeInput" id="timeInput" type="time" value="18:30" />
+        <button class="btn" id="saveTimeBtn">Spara tid</button>
+      </div>
+
+      <div class="actionsRight">
+        <button class="btn" id="confettiBtn">Mer konfetti</button>
+        <a class="linkBtn" href="index.html">Tillbaka</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =======================
+    // LOGGING (Google Sheets)
+    // =======================
+    // Paste your Google Apps Script Web App URL here:
+    const LOG_URL = "https://script.google.com/macros/s/AKfycbzMLnBv41yxw6x4-kwN06Wzuoz48PDDwmssd_ByDy_xjm1GFFlYHeYj23YjBC7tfYVvdQ/exec";
+
+    function logEvent(payloadObj){
+      if (!LOG_URL || !LOG_URL.startsWith("http")) return;
+      const payload = JSON.stringify(payloadObj);
+
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(LOG_URL, new Blob([payload], { type: "application/json" }));
+      } else {
+        fetch(LOG_URL, { method: "POST", mode: "no-cors", body: payload });
+      }
+    }
+
+    // ===== Konfetti =====
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+
+    function resize() {
+      canvas.width = window.innerWidth * devicePixelRatio;
+      canvas.height = window.innerHeight * devicePixelRatio;
+      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    let particles = [];
+    let animId = null;
+    let looping = true;
+    let nextBurstTimeout = null;
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function makeBurst(count=150) {
+      const w = window.innerWidth;
+      const x0 = rand(w*0.25, w*0.75);
+      const y0 = rand(80, 160);
+
+      for (let i=0; i<count; i++){
+        particles.push({
+          x: x0,
+          y: y0,
+          vx: rand(-6, 6),
+          vy: rand(-10, -4),
+          g: rand(0.18, 0.28),
+          s: rand(6, 11),
+          r: rand(0, Math.PI*2),
+          vr: rand(-0.2, 0.2),
+          life: rand(75, 120),
+          shape: Math.random() < 0.5 ? "rect" : "circle"
+        });
+      }
+    }
+
+    function step(){
+      ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+      particles = particles.filter(p => p.life > 0);
+
+      for (const p of particles){
+        p.life -= 1;
+        p.vy += p.g;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.r += p.vr;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.r);
+
+        const hue = (p.x + p.y + p.life) % 360;
+        ctx.fillStyle = `hsl(${hue}, 90%, 60%)`;
+
+        if (p.shape === "rect") {
+          ctx.fillRect(-p.s/2, -p.s/2, p.s, p.s*0.6);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.s/3, 0, Math.PI*2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      if (particles.length > 0){
+        animId = requestAnimationFrame(step);
+      } else {
+        cancelAnimationFrame(animId);
+        animId = null;
+        ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+        if (looping) {
+          clearTimeout(nextBurstTimeout);
+          nextBurstTimeout = setTimeout(() => popConfetti(), 350);
+        }
+      }
+    }
+
+    function popConfetti(){
+      makeBurst(150);
+      if (!animId) step();
+    }
+
+    window.addEventListener("load", () => {
+      looping = true;
+      popConfetti();
+    });
+
+    document.getElementById("confettiBtn").addEventListener("click", () => {
+      popConfetti();
+    });
+
+    // ===== Tidväljare + LOG selected time =====
+    const timeInput = document.getElementById("timeInput");
+    const saveTimeBtn = document.getElementById("saveTimeBtn");
+    const confirmBox = document.getElementById("confirmBox");
+
+    saveTimeBtn.addEventListener("click", () => {
+      const t = timeInput.value || "18:30";
+
+      // Log event + chosen time
+      logEvent({ event: "save_time", page: "yes.html", time: t });
+
+      // UI feedback
+      confirmBox.textContent = `Perfekt! Då kör vi kl. ${t} 😄`;
+      confirmBox.classList.add("show");
+      popConfetti();
+    });
+  </script>
+</body>
+</html>

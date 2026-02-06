@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sushi på fredag?</title>
+
+  <style>
+    :root{
+      --bg1:#140012;   /* deep wine */
+      --bg2:#1a0030;   /* deep purple */
+      --text: rgba(255,255,255,0.94);
+      --muted: rgba(255,255,255,0.78);
+
+      --cardA: rgba(255,255,255,0.12);
+      --cardB: rgba(255,255,255,0.07);
+
+      --yesA: #ff5aa5;
+      --yesB: #ff2d7a;
+
+      --noA:  #caa7ff;
+      --noB:  #7a53ff;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      height:100vh;
+      overflow:hidden;
+
+      background:
+        radial-gradient(900px 600px at 20% 10%, rgba(255,45,122,0.28), transparent 60%),
+        radial-gradient(900px 650px at 85% 25%, rgba(155,107,255,0.22), transparent 60%),
+        radial-gradient(900px 650px at 50% 110%, rgba(255,43,58,0.14), transparent 65%),
+        linear-gradient(180deg, var(--bg2), var(--bg1));
+
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    /* Fullskärmsyta */
+    #stage{
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(180deg, var(--cardA), var(--cardB));
+      overflow:hidden;
+      padding: clamp(12px, 2vw, 22px);
+      display:flex;
+      flex-direction:column;
+      gap: clamp(10px, 1.6vw, 18px);
+    }
+
+    /* Meme-rutan anpassas efter memet */
+    .memeFrame{
+      align-self:center;
+      display:inline-flex;
+      justify-content:center;
+      align-items:center;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 18px 55px rgba(0,0,0,0.35);
+      max-width: calc(100vw - 2 * clamp(12px, 2vw, 22px));
+    }
+
+    .meme{
+      display:block;
+      width:auto;
+      height:auto;
+      max-width: 100%;
+      max-height: clamp(280px, 56vh, 620px);
+      object-fit: contain;
+    }
+
+    .content{
+      flex: 1 1 auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      gap: 10px;
+    }
+
+    h1{
+      margin:0;
+      font-size: clamp(22px, 3.4vw, 44px);
+      letter-spacing: -0.02em;
+      text-shadow: 0 8px 28px rgba(0,0,0,0.35);
+    }
+
+    .sub{
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: clamp(14px, 1.2vw, 16px);
+      line-height: 1.5;
+    }
+
+    .btnRow{
+      display:flex;
+      gap: 16px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      padding: 16px 26px;
+      font-size: 18px;
+      font-weight: 850;
+      cursor:pointer;
+      transition: transform .20s ease, filter .15s ease;
+      user-select:none;
+      touch-action: manipulation;
+      white-space: nowrap;
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      color: rgba(255,255,255,0.94);
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      will-change: transform;
+    }
+    .btn:active{ transform: scale(0.98); }
+
+    .btn-yes{
+      background: linear-gradient(180deg, var(--yesA), var(--yesB));
+      border-color: rgba(255,255,255,0.18);
+      color: #2b0716;
+      transform-origin: center;
+    }
+
+    /* Nej börjar bredvid Ja, sen blir den absolut och kan flytta runt */
+    .btn-no{
+      background: linear-gradient(180deg, var(--noA), var(--noB));
+      border-color: rgba(255,255,255,0.16);
+      color: #12082c;
+      position: static;
+      z-index: 50;
+      will-change: left, top, transform;
+      transform-origin: center;
+    }
+    .btn-no.fleeing{
+      position: absolute;
+      z-index: 9999;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="stage">
+    <div class="memeFrame" id="memeFrame">
+      <img class="meme" id="memeImg" src="meme.jpg" alt="Meme" />
+    </div>
+
+    <div class="content">
+      <h1>Vill du äta sushi på fredag?</h1>
+      <div class="sub">En knapp är modig. Den andra är… snabb.</div>
+
+      <div class="btnRow" id="btnRow">
+        <button class="btn btn-yes" id="yesBtn">Ja</button>
+        <button class="btn btn-no" id="noBtn" aria-label="Nej">Nej</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn  = document.getElementById("noBtn");
+    const stage  = document.getElementById("stage");
+    const memeFrame = document.getElementById("memeFrame");
+    const memeImg = document.getElementById("memeImg");
+
+    // =======================
+    // LOGGING (Google Sheets)
+    // =======================
+    // Paste your Google Apps Script Web App URL here:
+    const LOG_URL = "https://script.google.com/macros/s/AKfycbzMLnBv41yxw6x4-kwN06Wzuoz48PDDwmssd_ByDy_xjm1GFFlYHeYj23YjBC7tfYVvdQ/exec";
+
+    function logEvent(payloadObj){
+      if (!LOG_URL || !LOG_URL.startsWith("http")) return;
+      const payload = JSON.stringify(payloadObj);
+
+      // sendBeacon is reliable even if we navigate away right after clicking
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(LOG_URL, new Blob([payload], { type: "application/json" }));
+      } else {
+        fetch(LOG_URL, { method: "POST", mode: "no-cors", body: payload });
+      }
+    }
+
+    // Go to yes.html + log that someone clicked yes
+    function goYes(){
+      logEvent({ event: "yes_click", page: "index.html" });
+      window.location.href = "yes.html";
+    }
+
+    yesBtn.addEventListener("click", goYes);
+
+    // ====== NEJ-KNAPP SOM FLYR + JA KNAPP VÄXER GRADVIS ======
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    let released = false;
+
+    // NO button shrink settings (SLOWER)
+    const NO_START_SCALE = 1;
+    const NO_MIN_SCALE   = 0.55;
+    const NO_SHRINK_STEP = 0.015; // slower shrinking
+
+    function getNoScale(){
+      return parseFloat(noBtn.dataset.scale || String(NO_START_SCALE));
+    }
+    function setNoScale(s){
+      const clamped = Math.max(NO_MIN_SCALE, Math.min(s, 1));
+      noBtn.dataset.scale = String(clamped);
+    }
+    function shrinkNoSlightly(){
+      const current = getNoScale();
+      setNoScale(current - NO_SHRINK_STEP);
+    }
+
+    function releaseNoButton(){
+      const stageRect = stage.getBoundingClientRect();
+      const btnRect   = noBtn.getBoundingClientRect();
+
+      noBtn.classList.add("fleeing");
+      noBtn.style.left = `${btnRect.left - stageRect.left}px`;
+      noBtn.style.top  = `${btnRect.top  - stageRect.top}px`;
+      released = true;
+    }
+
+    function pickSafeTeleport(){
+      const stageRect = stage.getBoundingClientRect();
+      const memeRect  = memeFrame.getBoundingClientRect();
+      const btnRect   = noBtn.getBoundingClientRect();
+
+      const meme = {
+        left:   memeRect.left   - stageRect.left,
+        right:  memeRect.right  - stageRect.left,
+        top:    memeRect.top    - stageRect.top,
+        bottom: memeRect.bottom - stageRect.top
+      };
+
+      const pad = 14;
+      const stageW = stageRect.width;
+      const stageH = stageRect.height;
+
+      const regions = [
+        { x1: pad, y1: pad, x2: meme.left - pad,              y2: stageH - pad },
+        { x1: meme.right + pad, y1: pad, x2: stageW - pad,    y2: stageH - pad },
+        { x1: pad, y1: pad, x2: stageW - pad,                 y2: meme.top - pad },
+        { x1: pad, y1: meme.bottom + pad, x2: stageW - pad,   y2: stageH - pad }
+      ];
+
+      const ok = regions.filter(r =>
+        (r.x2 - r.x1) >= btnRect.width &&
+        (r.y2 - r.y1) >= btnRect.height
+      );
+
+      const choices = ok.length ? ok : [{
+        x1: pad, y1: pad, x2: stageW - pad, y2: stageH - pad
+      }].filter(r =>
+        (r.x2 - r.x1) >= btnRect.width &&
+        (r.y2 - r.y1) >= btnRect.height
+      );
+
+      if (!choices.length) return { x: pad, y: pad };
+
+      const region = choices[Math.floor(Math.random() * choices.length)];
+      const x = rand(region.x1, region.x2 - btnRect.width);
+      const y = rand(region.y1, region.y2 - btnRect.height);
+      return { x, y };
+    }
+
+    // YES button growth (NO LIMIT)
+    function growYesSlightly(){
+      const current = parseFloat(yesBtn.dataset.grow || "1");
+      const next = current + 0.02; // increase this if you want faster growth
+      yesBtn.dataset.grow = String(next);
+      yesBtn.style.transform = `scale(${next})`;
+    }
+
+    function teleportNoButton(){
+      const stageRect = stage.getBoundingClientRect();
+      const pos = pickSafeTeleport();
+
+      const btnRect = noBtn.getBoundingClientRect();
+      const pad = 14;
+      const maxX = stageRect.width  - btnRect.width  - pad;
+      const maxY = stageRect.height - btnRect.height - pad;
+
+      const x = Math.max(pad, Math.min(pos.x, maxX));
+      const y = Math.max(pad, Math.min(pos.y, maxY));
+
+      const s = getNoScale();
+      const rot = (Math.random()*14 - 7).toFixed(1);
+
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top  = `${y}px`;
+      noBtn.style.transform = `translate(0,0) rotate(${rot}deg) scale(${s})`;
+
+      growYesSlightly();
+    }
+
+    function flee(){
+      shrinkNoSlightly();
+      if (!released) releaseNoButton();
+      teleportNoButton();
+    }
+
+    noBtn.addEventListener("mouseenter", flee);
+    noBtn.addEventListener("mousemove", () => { if (released) { flee(); } });
+
+    noBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      flee();
+    }, { passive: false });
+
+    noBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      flee();
+    });
+
+    window.addEventListener("resize", () => {
+      if (released) teleportNoButton();
+    });
+
+    memeImg.addEventListener("load", () => {});
+  </script>
+</body>
+</html>
